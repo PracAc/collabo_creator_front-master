@@ -38,11 +38,11 @@ function AsideMenuComponent() {
         {
             mainName: "리뷰 및 문의 관리",
             subMenus: [
-                { name: "리뷰 목록", toPath: "/review/list" },
-                { name: "리뷰 답변", toPath: "/review/reply/:id" },
+                { name: "리뷰 목록", toPath: "/list" },
+                { name: "리뷰 답변", toPath: "/reply/:id" },
                 { name: "문의 목록", toPath: "/qna/list" },
             ],
-            basicPath: "",
+            basicPath: "review",
             iconName: "review.png",
         },
         {
@@ -77,6 +77,14 @@ function AsideMenuComponent() {
                 { name: "알림 설정", toPath: "/notifications" },
             ],
             basicPath: "/settings",
+            iconName: "settings.png",
+        },
+        {
+            mainName: "공지 관리",
+            subMenus: [
+                { name: "공지 목록", toPath: "/list" }
+            ],
+            basicPath: "/notice",
             iconName: "settings.png",
         },
     ];

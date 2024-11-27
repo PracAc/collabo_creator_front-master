@@ -4,63 +4,31 @@ import {Navigate} from "react-router-dom";
 
 const ReviewListPage = lazy(() => import("../pages/review/ReviewListPage"));
 const ReviewReplyPage = lazy(() => import("../pages/review/ReviewReplyPage"));
-const QnaListPage = lazy(() => import("../pages/review/QnaListPage"));
-const QnaReadPage = lazy(() => import("../pages/review/QnaReadPage"));
 
 const reviewRouter = {
-    path: "/",
+    path: "review",
     children: [
         {
-            path: "review",
-            children: [
-                {
-                    path: "",
-                    element: <Navigate to="list" replace={true}/>
-                },
-                {
-                    path: "list",
-                    element: (
-                        <Suspense fallback={<LoadingPage />}>
-                            <ReviewListPage />
-                        </Suspense>
-                    ),
-                },
-                {
-                    path: "reply/:id",
-                    element: (
-                        <Suspense fallback={<LoadingPage />}>
-                            <ReviewReplyPage />
-                        </Suspense>
-                    ),
-                },
-            ]
+            path: "",
+            element: <Navigate to="list" replace={true}/>
         },
         {
-            path: "qna",
-            children: [
-                {
-                    path: "",
-                    element: <Navigate to="list" replace={true}/>
-                },
-                {
-                    path: "list",
-                    element: (
-                        <Suspense fallback={<LoadingPage />}>
-                            <QnaListPage />
-                        </Suspense>
-                    ),
-                },
-                {
-                    path: "read/:bno",
-                    element: (
-                        <Suspense fallback={<LoadingPage />}>
-                            <QnaReadPage />
-                        </Suspense>
-                    ),
-                },
-            ]
+            path: "list",
+            element: (
+                <Suspense fallback={<LoadingPage />}>
+                    <ReviewListPage />
+                </Suspense>
+            ),
         },
-    ],
-};
+        {
+            path: "reply/:id",
+            element: (
+                <Suspense fallback={<LoadingPage />}>
+                    <ReviewReplyPage />
+                </Suspense>
+            ),
+        },
+    ]
+}
 
 export default reviewRouter;

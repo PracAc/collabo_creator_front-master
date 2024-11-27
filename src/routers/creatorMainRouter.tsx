@@ -7,6 +7,7 @@ import DashboardRouter from "./dashboardRouter.tsx";
 import OrderRouter from "./orderRouter.tsx";
 import ProductRouter from "./productRouter.tsx";
 import ReviewRouter from "./reviewRouter.tsx";
+import noticeRouter from "./noticeRouter.tsx";
 
 const LoadingPage = lazy(() => import("../pages/common/LoadingPage.tsx"))
 const CreatorMainPage = lazy(()=> import("../pages/mainpage/CreatorMainPage.tsx"))
@@ -33,7 +34,8 @@ const creatorMainRouter = createBrowserRouter([
     DashboardRouter,
     OrderRouter,
     ProductRouter,
-    ReviewRouter
+    ReviewRouter,
+    noticeRouter
 ])
 
 export default creatorMainRouter

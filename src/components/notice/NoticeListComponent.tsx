@@ -2,7 +2,7 @@ import {createSearchParams, useNavigate, useSearchParams} from "react-router-dom
 import {useEffect, useState} from "react";
 import {IPageResponse} from "../../types/ipageresponse.ts";
 import {IBoard} from "../../types/review/iboard.ts";
-import {getQnaList} from "../../apis/review/qnaAPI.ts";
+import {getBoardList} from "../../apis/review/boardAPI.ts";
 import LoadingComponent from "../common/LoadingComponent.tsx";
 import PageComponent from "../common/PageComponent.tsx";
 
@@ -19,7 +19,7 @@ const initialState: IPageResponse<IBoard> = {
     totalPage: 0
 };
 
-function QnaListComponent() {
+function NoticeListComponent() {
 
     const navigate = useNavigate();
 
@@ -38,14 +38,20 @@ function QnaListComponent() {
 
     const moveToRead = (qno:number) => {
         navigate({
-            pathname: `/qna/read/${qno}`,
+            pathname: `/notice/read/${qno}`,
+            search:`${queryStr}`
+        })
+    }
+    const moveToAdd = () => {
+        navigate({
+            pathname: `/notice/add/`,
             search:`${queryStr}`
         })
     }
 
     useEffect(() => {
         setLoading(true);
-        getQnaList(page, size).then((data) => {
+        getBoardList(page, size).then((data) => {
             setPageResponse(data);
             setTimeout(() => {
                 setLoading(false);
@@ -98,7 +104,7 @@ function QnaListComponent() {
                             className="grid grid-cols-12 h-15 border border-b-0 border-gray-400 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <div
                                 className="col-span-2 p-2 flex justify-center items-center border-r border-gray-400">
-                                <span>문의 번호</span>
+                                <span>공지 번호</span>
                             </div>
                             <div
                                 className="col-span-6 p-2 flex justify-center items-center border-r border-gray-400">
@@ -119,7 +125,14 @@ function QnaListComponent() {
                         </div>
                         {/* table footer */}
                         <div
-                            className="grid grid-cols-12 h-15 border-t border-gray-400 text-center text-xs text-gray-600 uppercase tracking-wider">
+                            className="grid grid-cols-12 h-15 p-3 border-t border-gray-400 text-center text-xs text-gray-600 uppercase tracking-wider">
+                            <div className="col-span-12 flex justify-end">
+                                <button
+                                    onClick={moveToAdd}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-opacity-50 transition duration-200">
+                                    등록
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,4 +142,4 @@ function QnaListComponent() {
     );
 }
 
-export default QnaListComponent;
+export default NoticeListComponent;

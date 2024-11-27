@@ -10,7 +10,10 @@ export interface IBoardRead{
     writer: string,
     regDate: string,
     content: string
-    attachFileNames: string[],
+    attachFileNames: string[]
+}
+
+export interface IBoardReadWithReview extends IBoardRead{
     reviewList: IReview[]
 }
 

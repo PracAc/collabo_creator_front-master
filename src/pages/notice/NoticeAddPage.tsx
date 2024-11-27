@@ -1,15 +1,15 @@
+import NoticeAddComponent from "../../components/notice/NoticeAddComponent.tsx";
 import BasicLayout from "../../layouts/BasicLayout.tsx";
-import QnaReadComponent from "../../components/review/QnaReadComponent.tsx";
 
 
-function QnaReadPage() {
+function NoticeAddPage() {
     return (
         <BasicLayout>
             <div className="container mx-auto">
-                <QnaReadComponent />
+                <NoticeAddComponent/>
             </div>
         </BasicLayout>
     );
 }
 
-export default QnaReadPage;
+export default NoticeAddPage;
