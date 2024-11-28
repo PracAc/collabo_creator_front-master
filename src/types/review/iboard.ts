@@ -17,6 +17,10 @@ export interface IBoardReadWithReview extends IBoardRead{
     reviewList: IReview[]
 }
 
+export interface IBoardModify extends IBoardRead{
+    oldFileNames: string[]
+}
+
 export interface IReview {
     rno: number,
     reviewer: string,

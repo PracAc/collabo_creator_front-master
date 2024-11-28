@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {IBoardReadWithReview, IReview} from "../../types/review/iboard.ts";
 import {deleteBoard, getBoardRead, putBoardEdit} from "../../apis/review/boardAPI.ts";
@@ -17,9 +17,9 @@ const initialRead: IBoardReadWithReview = {
 
 const initialReview: IReview = {
     rno: 0,
-    reviewer: 'reviewer',
-    content: '',
-    regDate: ''
+    reviewer: "reviewer",
+    content: "",
+    regDate: ""
 }
 
 function NoticeReadComponent() {
@@ -29,6 +29,11 @@ function NoticeReadComponent() {
     const [query] = useSearchParams();
     const navigate = useNavigate();
     const queryStr = new URLSearchParams(query).toString();
+
+    // input file value Ref
+    const filesRef = useRef<HTMLInputElement>(null)
+    // 삭제할 파일 목록
+    const [deleteFileNames, setDeleteFileNames] = useState<string[]>([]);
 
     // 로딩 상태
     const [loading, setLoading] = useState<boolean>(false);
@@ -43,123 +48,168 @@ function NoticeReadComponent() {
     const [reviewState, setReviewState] = useState<IReview>(initialReview);
     // 작성글 삭제클릭 확인 상태
     const [deleteChk, setDeleteChk] = useState(false);
-    // 작성글 제목
+    // 수정할 작성글 제목
     const [boardEditTitle, setBoardEditTitle] = useState(board.title);
-    // 작성글 내용
+    // 수정할 작성글 내용
     const [boardEditContent, setBoardEditContent] = useState(board.content);
     // 알림 모달 상태
     const [modalOpen, setModalOpen] = useState(false);
     // 알림 모달 메시지
     const [modalMessage, setModalMessage] = useState("");
-
     // 답글 모달 상태
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
     // 리스트 목록 이동
     const handleMoveToList = () => {
         navigate(`/notice/list?${queryStr}`);
     };
     // 게시글 편집 모드 활성화
     const handleBoardEditClick = () => {
+        // 삭제할 이미지 목록 초기화
+        setDeleteFileNames([]);
+        // 편집 모드 상태 활성화
         setIsBoardEditing(true);
+    };
+    // 게시글 편집 모드 비활성화
+    const handleBoardEditCancelClick = () => {
+        // 기존 이미지 목록 되돌리는 set 처리
+        setBoard({...board, attachFileNames: [...board.attachFileNames, ...deleteFileNames],});
+        // 삭제할 이미지 목록 초기화
+        setDeleteFileNames([]);
+        // 편집 모드 상태 비활성화
+        setIsBoardEditing(false);
     };
     // 게시글 수정 처리
     const handleBoardModifyClick = () => {
-        // 추후 파일 처리 필요
-        // const files = filesRef?.current?.files
-
+        // 새로운 파일
+        const newFiles = filesRef?.current?.files
+        // formData 생성
         const formData: FormData = new FormData()
 
-        // if(files) {
-        //     for (let i = 0; i < files.length; i++) {
-        //         formData.append("files", files[i])
-        //         console.log(files[i]);
-        //     }
-        // }
+        // 기존 파일 이름 formData 추가
+        if (board.attachFileNames){
+            for (let i = 0; i < board.attachFileNames.length; i++) {
+                formData.append("attachFileNames", board.attachFileNames[i]);
+            }
+        }
+        // 신규 파일 목록 formData 추가
+        if(newFiles) {
+            for (let i = 0; i < newFiles.length; i++) {
+                formData.append("files", newFiles[i])
+            }
+            console.log(newFiles);
+        }
+        // 삭제할 파일 이름 formData 추가
+        if (deleteFileNames) {
+            for (let i = 0; i < deleteFileNames.length; i++) {
+                formData.append("deleteFileNames", deleteFileNames[i])
+                console.log(deleteFileNames[i])
+            }
+        }
+        // 수정된 title, content 를 formData 추가
         formData.append("title", boardEditTitle)
         formData.append("content", boardEditContent)
 
+        // API 호출 ( put 처리)
         putBoardEdit(Number(bno), formData)
             .then((data) => {
                 setModalMessage(`번호 ${data}가 수정이 완료되었습니다.`); // 성공 메시지
-                setModalOpen(true);
+                setModalOpen(true); // 알림 모달 종료
             })
             .catch(() => {
                 setModalMessage("수정에 실패했습니다."); // 실패 메시지
-                setModalOpen(true);
+                setModalOpen(true); // 알림 모달 종료
             });
 
     };
     // 게시글 삭제 처리
     const handleBoardDeleteClick = () => {
+        // API 호출 ( Soft Delete 처리 )
         deleteBoard(Number(bno))
             .then((data) => {
                 setModalMessage(`번호 ${data}가 삭제가 완료되었습니다.`); // 성공 메시지
-                setModalOpen(true);
-                setDeleteChk(true);
+                setModalOpen(true); // 알림 모달 종료
+                setDeleteChk(true); // list 이동을 위한 상태변경
             })
             .catch(() => {
                 setModalMessage("삭제를 실패했습니다."); // 실패 메시지
-                setModalOpen(true);
-                setDeleteChk(true);
+                setModalOpen(true); // 알림 모달 종료
             });
     }
     // 알림 모달 닫기
     const closeModal = () => {
-        // setBoard({ ...board, title: editTitle, content: editContent });
         setIsBoardEditing(false); // 편집 모드 종료
-        setModalOpen(false)
+        setModalOpen(false) // 알림 모달 종료
 
+        // 알림 모달 종료시 삭제 체크에 따른 list 이동 처리
         if (deleteChk) {
-            handleMoveToList()
+           return handleMoveToList()
         }
     };
-    // 답글 신규 작성 처리
+    // 답변 모달 열기
+    const handleReviewModalOpen = () => {
+        setReviewModalOpen(true); // 답변 모달 실행
+        setIsReviewEditing(false) // 답변 편집 모드 비활성화
+        setReviewState(initialReview) // 답변 작성 state 초기화
+    }
+    // 답변 신규 생성 처리
     const handleReviewSaveClick = () => {
+        // API 호출 ( post )
         postReviewAdd(Number(bno), reviewState)
             .then((data) => {
-                setModalMessage(`번호 ${data} 답글 작성 이 완료되었습니다.`); // 성공 메시지
-                setReviewModalOpen(false);
-                setModalOpen(true);
+                setModalMessage(`번호 ${data} 답변 작성 이 완료되었습니다.`); // 성공 메시지
+                setReviewModalOpen(false); // 답변 모달 종료
+                setModalOpen(true); // 알림 모달 실행
             })
             .catch(() => {
-                setModalMessage("답글 작성에 실패했습니다."); // 실패 메시지
-                setReviewModalOpen(false);
-                setModalOpen(true);
+                setModalMessage("답변 작성에 실패했습니다."); // 실패 메시지
+                setReviewModalOpen(false); // 답변 모달 종료
+                setModalOpen(true); // 알림 모달 실행
             });
     }
-    // 답글 편집 모드 활성화
+    // 답변 편집 모드 활성화
     const handleReviewEditClick = (rno: number) => {
+        // API 호출 ( get )
         getReviewOne(rno)
             .then(data => {
-                setReviewModalOpen(true)
-                setIsReviewEditing(true)
-                setReviewState(data)
+                setReviewState(data) // reviewState 값 추가
+                setReviewModalOpen(true)  // 답변 모달 실행
+                setIsReviewEditing(true) // 답변 편집 모드 활성화
             })
     }
-    // 답글 수정 처리
+    // 답변 수정 처리
     const handleReviewModifyClick = () => {
+        // API 호출 ( put )
         putReviewEdit(reviewState.rno, reviewState.content)
             .then(() => {
-                setReviewModalOpen(false)
-                setModalMessage(`답글 내용 수정이 완료되었습니다.`); // 성공 메시지
-                setModalOpen(true);
+                setModalMessage(`답변 내용 수정이 완료되었습니다.`); // 성공 메시지
+                setReviewModalOpen(false) // 답변 모달 종료
+                setReviewState(initialReview) // 답변 작성 state 초기화
+                setModalOpen(true); // 알림 모달 실행
             })
             .catch(() => {
-                setReviewModalOpen(false)
                 setModalMessage("수정에 실패했습니다."); // 실패 메시지
-                setModalOpen(true);
+                setReviewModalOpen(false) // 답변 모달 종료
+                setReviewState(initialReview) // 답변 작성 state 초기화
+                setModalOpen(true); // 알림 모달 실행
             });
+    }
+    // 답변 취소버튼 함수
+    const handleReviewModifyCancelClick = () => {
+        setReviewModalOpen(false) // 답변 모달 종료
+        setIsReviewEditing(false) // 답변 편집 모드 비활성화
     }
     // 답글 삭제 처리
     const handleReviewDeleteClick = (rno: number) => {
+        // API 호출 ( Soft Delete )
         deleteReview(rno)
             .then(() => {
-                setModalMessage(`답글 삭제가 완료되었습니다.`); // 성공 메시지
-                setModalOpen(true);
+                setModalMessage(`답변 삭제가 완료되었습니다.`); // 성공 메시지
+                setModalOpen(true); // 알림 모달 실행
             })
             .catch(() => {
                 setModalMessage("삭제에 실패했습니다."); // 실패 메시지
-                setModalOpen(true);
+                setModalOpen(true); // 알림 모달 실행
             });
     }
 
@@ -175,12 +225,34 @@ function NoticeReadComponent() {
         });
     }, [bno, modalOpen]);
 
-    const imgDivs = board.attachFileNames.map((file, index) => (
-        <div key={index}>
-            <span>{file}</span>
+    // 이미지 파일 삭제 처리 ( 화면에서만 처리 )
+    const handleImageDelete = (fileName: string) => {
+        // 기존 attachFileNames 수정을 위한 filter 처리
+        const updatedImages = board.attachFileNames.filter(name => name !== fileName);
+        // 삭제한 이미지 화면에서 제거
+        setBoard({ ...board, attachFileNames: updatedImages });
+        //삭제할 파일추가
+        setDeleteFileNames([...deleteFileNames, fileName]);
+    };
+
+    // 이미지 div 목록
+    const imgDivs = board.attachFileNames.map((fileName) => (
+        <div key={fileName} className="relative w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2">
+            <img
+                src={`http://localhost:8080/api/board/img/${fileName}`}
+                alt=""
+                className="w-full h-48 object-cover rounded-lg border border-gray-300"
+            />
+            {isBoardEditing && <button
+                onClick={() => handleImageDelete(fileName)}
+                className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition duration-200"
+            >
+                삭제
+            </button>}
         </div>
     ));
 
+    // 답글 div 목록
     const reviewsDiv = board.reviewList.map((review) => (
         <div key={review.rno} className="flex items-start border border-gray-200 p-4">
             <div className="flex-1">
@@ -236,8 +308,13 @@ function NoticeReadComponent() {
                             {board.content}
                         </div>
                     )}
-                    {imgDivs && <div className="mt-4">{imgDivs}</div>}
                 </div>
+                {isBoardEditing && <div className="flex flex-col border-b border-gray-200 pb-4">
+                    <label className="text-xl font-semibold text-gray-800">첨부파일</label>
+                    <input type="file" ref={filesRef} multiple={true}/>
+                </div>}
+                {imgDivs && <div className="flex flex-wrap -m-2">{imgDivs}</div>}
+
 
                 <div className="flex gap-4 mt-6 justify-between">
                     <button
@@ -264,7 +341,7 @@ function NoticeReadComponent() {
                         )}
                         {isBoardEditing ? (
                             <button
-                                onClick={() => setIsBoardEditing(false)}
+                                onClick={handleBoardEditCancelClick}
                                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50 transition duration-200"
                             >
                                 취소
@@ -283,9 +360,8 @@ function NoticeReadComponent() {
                 <div className="flex flex-col w-full mt-1 gap-2">
                     <div className="flex justify-between">
                         <span className="text-xl font-semibold text-gray-800">답변</span>
-                        <span className="text-xs font-semibold text-gray-800" onClick={() => {
-                            setReviewModalOpen(true)
-                        }}>답글 작성</span>
+                        <span className="text-xs font-semibold text-gray-800" onClick={handleReviewModalOpen}
+                        >답변 작성</span>
                     </div>
 
                     {reviewsDiv}
@@ -333,7 +409,7 @@ function NoticeReadComponent() {
                                 </button>)}
 
                             <button
-                                onClick={() => setReviewModalOpen(false)}
+                                onClick={handleReviewModifyCancelClick}
                                 className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-200"
                             >
                                 취소
