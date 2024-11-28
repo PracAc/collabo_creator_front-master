@@ -32,7 +32,6 @@ export const getBoardRead = async (bno:number) => {
 }
 
 export const putBoardEdit = async (bno:number, formData: FormData):Promise<number> => {
-    console.log(formData.values())
     const res = await axios.put(`${host}/edit/${bno}`, formData, header)
 
     return res.data;

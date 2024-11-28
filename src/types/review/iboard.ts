@@ -1,5 +1,5 @@
 export interface IBoard {
-    bno:number,
+    bno: number,
     title: string,
     writer: string,
     regDate: string
@@ -18,6 +18,7 @@ export interface IBoardReadWithReview extends IBoardRead{
 }
 
 export interface IReview {
+    rno: number,
     reviewer: string,
     regDate: string,
     content: string,
