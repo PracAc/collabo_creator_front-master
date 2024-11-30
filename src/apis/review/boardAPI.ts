@@ -37,7 +37,7 @@ export const putBoardEdit = async (bno:number, formData: FormData):Promise<numbe
     return res.data;
 }
 
-export const deleteBoard = async (bno:number) => {
-    const res = await axios.put(`${host}/delete/${bno}`)
+export const deleteBoard = async (bno:number, fileNames:string[]) => {
+    const res = await axios.put(`${host}/delete/${bno}`,fileNames)
     return res.data;
 }

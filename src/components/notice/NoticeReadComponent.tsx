@@ -125,7 +125,7 @@ function NoticeReadComponent() {
     // 게시글 삭제 처리
     const handleBoardDeleteClick = () => {
         // API 호출 ( Soft Delete 처리 )
-        deleteBoard(Number(bno))
+        deleteBoard(Number(bno), board.attachFileNames)
             .then((data) => {
                 setModalMessage(`번호 ${data}가 삭제가 완료되었습니다.`); // 성공 메시지
                 setModalOpen(true); // 알림 모달 종료
@@ -219,7 +219,6 @@ function NoticeReadComponent() {
             setBoard(data);
             setBoardEditTitle(data.title); // 초기값 설정
             setBoardEditContent(data.content); // 초기값 설정
-            console.log(data.attachFileNames)
             setTimeout(() => {
                 setLoading(false);
             }, 600);
@@ -241,8 +240,8 @@ function NoticeReadComponent() {
         <div key={fileName} className="relative w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2">
             <img
                 // S3 처리 필요 서버에서 get메서드를 통한 호출처리
-                // src={`http://localhost:8080/api/board/img/${fileName}`}
-                src={`https://s3.ap-northeast-2.amazonaws.com/oz-wizard-bucket/board/${fileName}`}
+                src={`http://localhost:8080/api/board/img/${fileName}`}
+                // src={`https://s3.ap-northeast-2.amazonaws.com/oz-wizard-bucket/board/${fileName}`}
                 alt=""
                 className="w-full h-48 object-cover rounded-lg border border-gray-300"
             />
